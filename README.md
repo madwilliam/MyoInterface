@@ -18,10 +18,19 @@ This library is very similar to FreeMyo.py, but with more modular functions that
 
 
 
-Examples:
+### setup:
+
+do`pip install -r req.txt`
+
+use [Scanning_for_mac_address.py](https://github.com/madwilliam/MyoInterface/blob/main/Scanning_for_mac_address.py) to scan for myoband mac address, mine showed up as DIUxMyo
+
+change the default address in [MyoInterface](https://github.com/madwilliam/MyoInterface/blob/main/MyoInterface.py)
+
+### Examples:
 
 [Live EMG visualization](https://github.com/madwilliam/MyoInterface/blob/main/real_time_plotting.py)
 
 [Printing EMG reading](https://github.com/madwilliam/MyoInterface/blob/main/test.py)
 
-[scanning Myo Mac address]()
+[recording Emg data ](https://github.com/madwilliam/MyoInterface/blob/main/MyoInterface.py)
+
