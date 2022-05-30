@@ -65,9 +65,7 @@ class MyoInterface:
         self.emg_data_stream = [[] for _ in range(8)]
         async def raw_emgg_callback(sender, data):
             id = self.code.emg_handles.index(sender)
-            print(data)
             emg = struct.unpack('<16b', data)
-            print(emg)
             await self.emg_data_queue.put((id,emg))
         if action is None:
             action = lambda self:print(self.emg_data_stream)
@@ -131,24 +129,19 @@ class MyoInterface:
     
     async def process_emg_data(self,action):
         while True:
-            await self.process_queued_emg_data()
-            action(self)
-    
-    async def process_queued_emg_data(self):
-        print(self.emg_data_queue.qsize())
-        while self.emg_data_queue.qsize() > 0:
-            recv_characteristic,emg = await self.emg_data_queue.get()
-            emg1 = emg[:8]
-            emg2 = emg[8:16]
-            # progression = (recv_characteristic - last_recv_characteristic) % 4
-            # if progression > 1:
-            #     for i in range(1,progression):
-            #         for _ in range(0,8):
-            #             self.emg_data_stream[i].append(0)
-            # last_recv_characteristic = recv_characteristic
-            for i in range(0,8):
-                self.emg_data_stream[i].append(emg1[i])
-                self.emg_data_stream[i].append(emg2[i])
+            if self.emg_data_queue.qsize() > 0:
+                recv_characteristic,emg = await self.emg_data_queue.get()
+                emg1 = emg[:8]
+                emg2 = emg[8:16]
+                # progression = (recv_characteristic - last_recv_characteristic) % 4
+                # if progression > 1:
+                #     for i in range(1,progression):
+                #         for _ in range(0,8):
+                #             self.emg_data_stream[i].append(0)
+                # last_recv_characteristic = recv_characteristic
+                for i in range(0,8):
+                    self.emg_data_stream[i].append(emg1[i])
+                    self.emg_data_stream[i].append(emg2[i])
             else:
                 await asyncio.sleep(0.0001)
 
