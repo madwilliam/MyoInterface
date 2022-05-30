@@ -9,7 +9,7 @@ from matplotlib.animation import FuncAnimation
 import time
 
 async def function(interface):
-    await interface.stream_raw_emg(action = lambda x : print('inside',interface.emg_data_stream))
+    await interface.stream_raw_emg()
 
 interface = MyoInterface()
 interface.lines = []

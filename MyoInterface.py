@@ -6,6 +6,7 @@ from enum import Enum
 import struct
 from command_codes import *
 from matplotlib.animation import FuncAnimation
+import os
 class MyoInterface:
     def __init__(self,address = "F3:F8:2E:FB:8C:3C"):
         self.address = address
@@ -72,28 +73,24 @@ class MyoInterface:
         stream_function = lambda : self.process_emg_data(action)
         await self.subscribe_raw_eeg(raw_emgg_callback,stream_funtion = stream_function,set_up_function=set_up_function)
     
-    async def plot_live_raw_emg(self):
-        self.lines = []
-        self.nsamples_displayed = 1000
-        plt.ion()
+    async def record_raw_emg(self,path):
         def set_up_function():
-            self.figure = plt.figure(figsize=[15,15])
-            for i in range(8):
-                ax = plt.subplot(8,1,i+1)
-                line, = ax.plot(np.zeros(self.nsamples_displayed))
-                ax.set_ylim(-50,50)
-                self.lines.append(line)
+            if os.path.exists(path):
+                print('file exists, aborting')
+                exit()
+            self.path = os.path.dirname(path) 
+            self.file_name = os.path.basename(path) 
+            if not os.path.exists(self.path):
+                os.mkdir(self.path)
+            with open(os.path.join(self.path,self.file_name),'a') as fd:
+                fd.write(','.join([f'channel{i}' for i in range(8)]))
         def update(self):
+            newydata = []
             for i in range(8):
-                # print('updateing',len(self.emg_data_stream[i]))
-                # xdata = self.emg_data_stream[i]
-                ydata = self.emg_data_stream[i]
-                if len(ydata) < self.nsamples_displayed:
-                    ydata = np.pad(ydata,[0,self.nsamples_displayed-len(ydata)])
-                # self.lines[i].set_xdata()
-                self.lines[i].set_ydata(ydata)
-            self.figure.canvas.draw()
-            self.figure.canvas.flush_events()
+                newydata.append(self.emg_data_stream[i][-2:])
+            with open(os.path.join(self.path,self.file_name),'a') as fd:
+                fd.write(f'\n'+','.join([str(i[0]) for i in newydata]))  
+                fd.write(f'\n'+','.join([str(i[1]) for i in newydata]))  
         await self.stream_raw_emg(set_up_function=set_up_function,action = update)
 
     async def async_connect_and_run_function(self,function):
@@ -127,7 +124,7 @@ class MyoInterface:
         patch = int.from_bytes(r[4:6],'big') 
         hardware_rev = int.from_bytes(r[6:],'big') 
     
-    async def process_emg_data(self,action):
+    async def process_emg_data(self,action=None):
         while True:
             if self.emg_data_queue.qsize() > 0:
                 recv_characteristic,emg = await self.emg_data_queue.get()
@@ -142,36 +139,10 @@ class MyoInterface:
                 for i in range(0,8):
                     self.emg_data_stream[i].append(emg1[i])
                     self.emg_data_stream[i].append(emg2[i])
+                if not action == None:
+                    action(self)
             else:
                 await asyncio.sleep(0.0001)
-
-    async def plot_live_raw_emg_animate(self):
-        self.lines = []
-        self.nsamples_displayed = 1000
-        def set_up_function():
-            self.figure = plt.figure(figsize=[15,15])
-            for i in range(8):
-                ax = plt.subplot(8,1,i+1)
-                line, = ax.plot(np.zeros(self.nsamples_displayed))
-                ax.set_ylim(-50,50)
-                self.lines.append(line)
-        async def update(t):
-            for i in range(8):
-                ydata = self.emg_data_stream[i]
-                if len(ydata) < self.nsamples_displayed:
-                    ydata = np.pad(ydata,[0,self.nsamples_displayed-len(ydata)])
-                self.lines[i].set_ydata(ydata)
-                await self.process_queued_emg_data()
-        async def raw_emgg_callback(sender, data):
-            id = self.code.emg_handles.index(sender)
-            emg = struct.unpack('<16b', data)
-            await self.emg_data_queue.put((id,emg))
-        async def stream_function():
-            await self.process_queued_emg_data()
-            ani = FuncAnimation(self.figure, update, interval=1)
-            plt.show()
-        self.emg_data_stream = [[] for _ in range(8)]
-        await self.subscribe_raw_eeg(raw_emgg_callback,stream_funtion = stream_function,set_up_function=set_up_function)
 
 class CommandCode:
     def __init__(self):
