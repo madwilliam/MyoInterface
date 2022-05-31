@@ -28,7 +28,7 @@ change the default address in [MyoInterface](https://github.com/madwilliam/MyoIn
 
 ### Examples:
 
-[Live EMG visualization](https://github.com/madwilliam/MyoInterface/blob/main/real_time_plotting.py)
+[Live EMG visualization](https://github.com/madwilliam/MyoInterface/blob/main/MonitorEEGQt.py)
 
 [Printing EMG reading](https://github.com/madwilliam/MyoInterface/blob/main/test.py)
 
