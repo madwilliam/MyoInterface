@@ -22,7 +22,7 @@ This library is very similar to FreeMyo.py, but with more modular functions that
 
 do`pip install -r req.txt`
 
-use [Scanning_for_mac_address.py](https://github.com/madwilliam/MyoInterface/blob/main/Scanning_for_mac_address.py) to scan for myoband mac address, mine showed up as DIUxMyo
+use [Scanning_for_mac_address.py](https://github.com/madwilliam/MyoInterface/blob/main/script/Scanning_for_mac_address.py) to scan for myoband mac address, mine showed up as DIUxMyo
 
 change the default address in [MyoInterface](https://github.com/madwilliam/MyoInterface/blob/main/MyoInterface.py)
 
